@@ -5,6 +5,9 @@ export const ROUTES = {
   chat: "/chat",
   compare: "/compare",
   admin: "/admin",
+  firstSemester: "/first-semester",
+  programStructure: "/program-structure",
+  distribution: "/distribution",
 } as const;
 
 export const API_BASE_URL =

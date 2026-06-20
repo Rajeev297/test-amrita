@@ -1,7 +1,9 @@
 "use client";
 
 import type { Course } from "@/types";
+import type { SourceInfo } from "@/types/curriculum";
 import { CourseCategoryBadge } from "@/components/courses/CourseCategoryBadge";
+import { SourceLabel } from "@/components/source/SourceLabel";
 import { cn } from "@/lib/utils";
 
 export interface SummaryData {
@@ -15,6 +17,7 @@ export interface ChatMessageData {
   text: string;
   courses?: Course[];
   summary?: SummaryData;
+  source?: SourceInfo;
 }
 
 interface ChatMessageProps {
@@ -101,10 +104,12 @@ function AssistantMessage({
   text,
   courses,
   summary,
+  source,
 }: {
   text: string;
   courses?: Course[];
   summary?: SummaryData;
+  source?: SourceInfo;
 }) {
   return (
     <div className="flex justify-start">
@@ -136,6 +141,12 @@ function AssistantMessage({
               No courses matched your query. Try a different search term.
             </p>
           )}
+
+          {source && (
+            <div className={cn("mt-2", (text || summary || (courses && courses.length > 0)) && "border-t border-slate-100 pt-2")}>
+              <SourceLabel source={source} />
+            </div>
+          )}
         </div>
       </div>
     </div>
@@ -152,6 +163,7 @@ export function ChatMessage({ message }: ChatMessageProps) {
       text={message.text}
       courses={message.courses}
       summary={message.summary}
+      source={message.source}
     />
   );
 }

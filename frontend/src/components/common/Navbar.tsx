@@ -12,6 +12,9 @@ const navLinks = [
   { href: ROUTES.search, label: "Search" },
   { href: ROUTES.chat, label: "Chat" },
   { href: ROUTES.compare, label: "Compare" },
+  { href: ROUTES.firstSemester, label: "First Sem" },
+  { href: ROUTES.programStructure, label: "Structure" },
+  { href: ROUTES.distribution, label: "Distribution" },
   { href: ROUTES.admin, label: "Admin" },
 ];
 
@@ -68,7 +71,7 @@ export function Navbar() {
                 key={link.href}
                 href={link.href}
                 className={cn(
-                  "rounded-md px-3 py-2 text-sm font-medium transition-colors",
+                  "rounded-md px-2.5 py-2 text-sm font-medium transition-colors",
                   isActive(pathname, link.href)
                     ? "text-brand-600"
                     : "text-slate-600 hover:bg-slate-100 hover:text-slate-900"

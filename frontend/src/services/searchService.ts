@@ -23,7 +23,6 @@ export async function searchCourses(rawQuery: string): Promise<Course[]> {
     const cat = course.category.toLowerCase();
 
     if (code.includes(q) || title.includes(q)) return true;
-
     if (cat.includes(q) || q.includes(cat)) return true;
 
     const words = q.split(/\s+/).filter((w) => w.length >= 3);

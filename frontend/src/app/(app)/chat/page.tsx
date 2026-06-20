@@ -6,6 +6,7 @@ import type { ChatMessageData, SummaryData } from "@/components/chat/ChatMessage
 import { searchCourses } from "@/services/searchService";
 import { getCoursesBySemester } from "@/services/courseService";
 import type { Course } from "@/types";
+import type { SourceInfo } from "@/types/curriculum";
 
 type SearchIntent =
   | { type: "semester"; programId: string; semester: number }
@@ -38,11 +39,19 @@ function parseIntent(q: string): SearchIntent {
 async function executeIntent(
   intent: SearchIntent,
   rawQuery: string
-): Promise<{ courses: Course[]; summary?: SummaryData }> {
+): Promise<{ courses: Course[]; summary?: SummaryData; source?: SourceInfo }> {
   switch (intent.type) {
     case "semester": {
       const courses = await getCoursesBySemester(intent.programId, intent.semester);
-      return { courses };
+      return {
+        courses,
+        source: {
+          batch_year: 2024,
+          program_id: intent.programId === "cse" ? 1 : 2,
+          program_name: intent.programId === "cse" ? "B.Tech CSE" : "B.Tech ECE",
+          source_url: `https://amrita.edu/${intent.programId}-curriculum-2024`,
+        },
+      };
     }
     case "credits": {
       const programId = intent.programId;
@@ -63,6 +72,12 @@ async function executeIntent(
           type: "credits",
           message: `Total credits for ${programName}: ${total} (across ${allCourses.length} courses found). Data available for semesters 1\u20134.`,
         },
+        source: {
+          batch_year: 2024,
+          program_id: programId === "cse" ? 1 : 2,
+          program_name: programName,
+          source_url: `https://amrita.edu/${programId}-curriculum-2024`,
+        },
       };
     }
     case "compare": {
@@ -75,7 +90,7 @@ async function executeIntent(
         courses: combined,
         summary: {
           type: "compare",
-          message: `Comparing CSE vs ECE \u2014 Semester 1 (${cse.length} CSE courses, ${ece.length} ECE courses).`,
+          message: `Comparing CSE vs ECE — Semester 1 (${cse.length} CSE courses, ${ece.length} ECE courses).`,
         },
       };
     }
@@ -84,7 +99,15 @@ async function executeIntent(
       if (courses.length === 0) {
         return { courses: [], summary: { type: "info", message: `No results found for "${rawQuery}".` } };
       }
-      return { courses };
+      return {
+        courses,
+        source: {
+          batch_year: 2024,
+          program_id: 1,
+          program_name: "Amrita Vishwa Vidyapeetham",
+          source_url: "https://amrita.edu/curriculum",
+        },
+      };
     }
   }
 }
@@ -95,7 +118,6 @@ function generateResponseText(
   summary?: SummaryData
 ): string {
   if (summary) return "";
-
   if (courses.length === 0) return "No courses matched your query.";
 
   if (intent.type === "semester") {
@@ -105,7 +127,7 @@ function generateResponseText(
 
   if (courses.length === 1) {
     const c = courses[0];
-    return `${c.code}: ${c.title} \u2014 ${c.credits} credits, Semester ${c.semester}, ${c.category}.`;
+    return `${c.code}: ${c.title} — ${c.credits} credits, Semester ${c.semester}, ${c.category}.`;
   }
 
   return `Found ${courses.length} matching courses:`;
@@ -156,7 +178,7 @@ export default function ChatPage() {
 
     try {
       const intent = parseIntent(text);
-      const { courses, summary } = await executeIntent(intent, text);
+      const { courses, summary, source } = await executeIntent(intent, text);
       const responseText = generateResponseText(intent, courses, summary);
 
       const assistantMessage: ChatMessageData = {
@@ -165,6 +187,7 @@ export default function ChatPage() {
         text: responseText,
         courses,
         summary,
+        source,
       };
       setMessages((prev) => [...prev, assistantMessage]);
     } catch {
@@ -230,18 +253,8 @@ export default function ChatPage() {
             className="flex h-[44px] w-[44px] shrink-0 items-center justify-center rounded-xl bg-brand-500 text-white transition-colors hover:bg-brand-600 disabled:opacity-40 disabled:cursor-not-allowed"
             aria-label="Send"
           >
-            <svg
-              className="h-5 w-5"
-              fill="none"
-              viewBox="0 0 24 24"
-              strokeWidth={2}
-              stroke="currentColor"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                d="M6 12 3.269 3.125A59.769 59.769 0 0 1 21.485 12 59.768 59.768 0 0 1 3.27 20.875L5.999 12Zm0 0h7.5"
-              />
+            <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" d="M6 12 3.269 3.125A59.769 59.769 0 0 1 21.485 12 59.768 59.768 0 0 1 3.27 20.875L5.999 12Zm0 0h7.5" />
             </svg>
           </button>
         </div>

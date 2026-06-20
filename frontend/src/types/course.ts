@@ -13,6 +13,9 @@ export interface Course {
   program: string;
   semester: number;
   category: CourseCategory;
+  batchYear?: number;
+  sourceUrl?: string;
+  isActive?: boolean;
 }
 
 export interface Program {
